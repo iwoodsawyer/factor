@@ -12,11 +12,6 @@
  *
  * calls the SGELQF/DGELQF/CGELQF/ZGELQF and
  * SORGLQ/DORGLQ/CUNGLQ/ZUNGLQ named LAPACK functions
- *
- * Ivo Houtzager
- *
- * Delft Center of Systems and Control
- * The Netherlands, 2010
  */
 
 #include "mex.h"
@@ -25,13 +20,14 @@
 
 void lq_double(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-    ptrdiff_t lwork, info = 1;
+    mwSignedIndex lwork, info = 0, econ = 0, cplx = 0;
+    mwSignedIndex m, n, min_mn, lda, m2, dc = 1;
+    mwSignedIndex i, j, start;
+    size_t element_size = sizeof(double);
     double *Qpr, *Lpr, *Ipr, *Ap, *ptau, *pwork, *pwork2, *psize, *psize2;
     #if !(MX_HAS_INTERLEAVED_COMPLEX)
     double *Qpi, *Lpi, *Ipi;
     #endif
-    size_t m, n, min_mn, lda, m2, element_size = sizeof(double), econ = 0, cplx = 0, dc = 1;
-    mwIndex i, j, start;
     mxClassID classid = mxDOUBLE_CLASS;
     mxComplexity cplxflag = mxREAL;
 
@@ -117,7 +113,7 @@ void lq_double(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     else {
         dgelqf(&m, &n, Ap, &lda, ptau, psize, &lwork, &info);
     }
-    lwork = psize[0];
+    lwork = (mwSignedIndex)psize[0];
     mxFree(psize);
 
     /* allocate workspace */
@@ -208,7 +204,7 @@ void lq_double(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         else {
             dorglq(&m2, &n, &min_mn, Ap, &lda, ptau, psize2, &lwork, &info);
         }
-        lwork = psize2[0];
+        lwork = (mwSignedIndex)psize2[0];
         mxFree(psize2);
 
         /* allocate workspace */
@@ -273,13 +269,14 @@ void lq_double(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 void lq_single(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-    ptrdiff_t lwork, info = 1;
+    mwSignedIndex lwork, info = 0, econ = 0, cplx = 0;
+    mwSignedIndex m, n, min_mn, lda, m2, dc = 1;
+    mwSignedIndex i, j, start;
+    size_t element_size = sizeof(float);
     float *Qpr, *Lpr, *Ipr, *Ap, *ptau, *pwork, *pwork2, *psize, *psize2;
     #if !(MX_HAS_INTERLEAVED_COMPLEX)
     float *Qpi, *Lpi, *Ipi;
     #endif
-    size_t m, n, min_mn, lda, m2, element_size = sizeof(float), econ = 0, cplx = 0, dc = 1;
-    mwIndex i, j, start;
     mxClassID classid = mxSINGLE_CLASS;
     mxComplexity cplxflag = mxREAL;
 
@@ -366,7 +363,7 @@ void lq_single(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     else {
         sgelqf(&m, &n, Ap, &lda, ptau, psize, &lwork, &info);
     }
-    lwork = psize[0];
+    lwork = (mwSignedIndex)psize[0];
     mxFree(psize);
 
     /* allocate workspace */
@@ -457,7 +454,7 @@ void lq_single(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         else {
             sorglq(&m2, &n, &min_mn, Ap, &lda, ptau, psize2, &lwork, &info);
         }
-        lwork = psize2[0];
+        lwork = (mwSignedIndex)psize2[0];
         mxFree(psize2);
 
         /* allocate workspace */

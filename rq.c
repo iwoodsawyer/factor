@@ -12,11 +12,6 @@
  *
  * calls the SGERQF/DGERQF/CGERQF/ZGERQF and
  * SORGRQ/DORGRQ/CUNGRQ/ZUNGRQ named LAPACK functions
- *
- * Ivo Houtzager
- *
- * Delft Center of Systems and Control
- * The Netherlands, 2010
  */
 
 #include "mex.h"
@@ -25,13 +20,14 @@
 
 void rq_double(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-    ptrdiff_t lwork, info = 1;
+    mwSignedIndex lwork, info = 0, econ = 0, cplx = 0;
+    mwSignedIndex m, n, min_mn, lda, m2, dc = 1; 
+    mwSignedIndex i, j, start, limit;
+    size_t element_size = sizeof(double);
     double *Qpr, *Rpr, *Ipr, *Ap, *ptau, *pwork, *pwork2, *psize, *psize2;
     #if !(MX_HAS_INTERLEAVED_COMPLEX)
     double *Qpi, *Rpi, *Ipi;
     #endif
-    size_t m, n, min_mn, lda, m2, element_size = sizeof(double), econ = 0, cplx = 0, dc = 1;
-    mwIndex i, j, start, limit;
     mxClassID classid = mxDOUBLE_CLASS;
     mxComplexity cplxflag = mxREAL;
 
@@ -117,7 +113,7 @@ void rq_double(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     else {
         dgerqf(&m, &n, Ap, &lda, ptau, psize, &lwork, &info);
     }
-    lwork = psize[0];
+    lwork = (mwSignedIndex)psize[0];
     mxFree(psize);
 
     /* allocate workspace */
@@ -272,7 +268,7 @@ void rq_double(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         else {
             dorgrq(&m2, &n, &min_mn, Ap, &lda, ptau, psize2, &lwork, &info);
         }
-        lwork = psize2[0];
+        lwork = (mwSignedIndex)psize2[0];
         mxFree(psize2);
 
         /* allocate workspace */
@@ -337,13 +333,14 @@ void rq_double(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 void rq_single(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-    ptrdiff_t lwork, info = 1;
+    mwSignedIndex lwork, info = 0, econ = 0, cplx = 0;
+    mwSignedIndex m, n, min_mn, lda, m2, dc = 1; 
+    mwSignedIndex i, j, start, limit;
+    size_t element_size = sizeof(float);
     float *Qpr, *Rpr, *Ipr, *Ap, *ptau, *pwork, *pwork2, *psize, *psize2;
     #if !(MX_HAS_INTERLEAVED_COMPLEX)
     float *Qpi, *Rpi, *Ipi;
     #endif
-    size_t m, n, min_mn, lda, m2, element_size = sizeof(float), econ = 0, cplx = 0, dc = 1;
-    mwIndex i, j, start, limit;
     mxClassID classid = mxSINGLE_CLASS;
     mxComplexity cplxflag = mxREAL;
 
@@ -429,7 +426,7 @@ void rq_single(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     else {
         sgerqf(&m, &n, Ap, &lda, ptau, psize, &lwork, &info);
     }
-    lwork = psize[0];
+    lwork = (mwSignedIndex)psize[0];
     mxFree(psize);
 
     /* allocate workspace */
@@ -584,7 +581,7 @@ void rq_single(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         else {
             sorgrq(&m2, &n, &min_mn, Ap, &lda, ptau, psize2, &lwork, &info);
         }
-        lwork = psize2[0];
+        lwork = (mwSignedIndex)psize2[0];
         mxFree(psize2);
 
         /* allocate workspace */

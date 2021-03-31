@@ -18,9 +18,6 @@
  * calls the SGEQP3/DGEQP3/CGEQP3/ZGEQP3, SGEQRF/DGEQRF/CGEQRF/ZGEQRF,
  * SGEQRFP/DGEQRFP/CGEQRFP/ZGEQRFP and SORGQR/DORGQR/CUNGQR/ZUNGQR 
  * named LAPACK functions
- *
- * Ivo Houtzager
- * San Diego, 2015
  */
 
 #include <string.h>
@@ -31,15 +28,16 @@
 
 void qr_double(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-    ptrdiff_t *Jp, lwork, info = 1;
+    mwSignedIndex *Jp, lwork, info = 0, econ = 0, cplx = 0;
+    mwSignedIndex perm = 0, vector = 0, positive = 0;
+    mwSignedIndex  m, n, min_mn, n2, dc = 1;
+    mwSignedIndex  i, j, limit;  
+    size_t element_size = sizeof(double);
     double *Jpr, *Qpr, *Rpr, *Ipr, *Ap;
     #if !(MX_HAS_INTERLEAVED_COMPLEX)
     double *Qpi, *Rpi, *Ipi;
     #endif
     double *ptau, *pwork, *pwork2, *rwork, *psize, *psize2;
-    size_t m, n, min_mn, n2, element_size = sizeof(double);
-    size_t econ = 0, cplx = 0, perm = 0, vector = 0, positive = 0, dc = 1;
-    mwIndex i, j, limit;
     mxClassID classid = mxDOUBLE_CLASS;
     mxComplexity cplxflag = mxREAL;
     
@@ -141,7 +139,7 @@ void qr_double(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     lwork = -1;
     psize = mxMalloc(dc*element_size);
     if (perm) {
-        Jp = mxMalloc(n*sizeof(ptrdiff_t));
+        Jp = mxMalloc(n*sizeof(mwSignedIndex));
         if (cplx) {
             rwork = mxMalloc(2*n*element_size);
             zgeqp3(&m, &n, Ap, &m, Jp, ptau, psize, &lwork, rwork, &info);
@@ -166,7 +164,7 @@ void qr_double(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             dgeqrf(&m, &n, Ap, &m, ptau, psize, &lwork, &info);
         }
     }
-    lwork = (ptrdiff_t)psize[0];
+    lwork = (mwSignedIndex)psize[0];
     mxFree(psize);
     
     /* allocate workspace */
@@ -325,7 +323,7 @@ void qr_double(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             plhs[2] = mxCreateNumericMatrix(n,n,classid,mxREAL);
             Jpr = mxGetData(plhs[2]);
             for (i=0; i<n; i++) {
-                size_t idx = Jp[i]-1;
+                mwSignedIndex idx = Jp[i]-1;
                 Jpr[i*n+idx] = 1;
             }
         }
@@ -344,7 +342,7 @@ void qr_double(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         else {
             dorgqr(&m, &n2, &min_mn, Ap, &m, ptau, psize2, &lwork, &info);
         }
-        lwork = (ptrdiff_t)psize2[0];
+        lwork = (mwSignedIndex)psize2[0];
         mxFree(psize2);
 
         /* allocate workspace */
@@ -399,15 +397,16 @@ void qr_double(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 void qr_single(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-    ptrdiff_t *Jp, lwork, info = 1;
+    mwSignedIndex *Jp, lwork, info = 0, econ = 0, cplx = 0;
+    mwSignedIndex perm = 0, vector = 0, positive = 0;
+    mwSignedIndex  m, n, min_mn, n2, dc = 1;
+    mwSignedIndex  i, j, limit;  
+    size_t element_size = sizeof(float);
     float *Jpr, *Qpr, *Rpr, *Ipr, *Ap;
     #if !(MX_HAS_INTERLEAVED_COMPLEX)
     float *Qpi, *Rpi, *Ipi;
     #endif
     float *ptau, *pwork, *pwork2, *rwork, *psize, *psize2;
-    size_t m, n, min_mn, n2, element_size = sizeof(float);
-    size_t econ = 0, cplx = 0, perm = 0, vector = 0, positive = 0, dc = 1;
-    mwIndex i, j, limit;
     mxClassID classid = mxSINGLE_CLASS;
     mxComplexity cplxflag = mxREAL;
     
@@ -508,7 +507,7 @@ void qr_single(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     lwork = -1;
     psize = mxMalloc(dc*element_size);
     if (perm) {
-        Jp = mxMalloc(n*sizeof(ptrdiff_t));
+        Jp = mxMalloc(n*sizeof(mwSignedIndex));
         if (cplx) {
             rwork = mxMalloc(2*n*element_size);
             cgeqp3(&m, &n, Ap, &m, Jp, ptau, psize, &lwork, rwork, &info);
@@ -533,7 +532,7 @@ void qr_single(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             sgeqrf(&m, &n, Ap, &m, ptau, psize, &lwork, &info);
         }
     }
-    lwork = (ptrdiff_t)psize[0];
+    lwork = (mwSignedIndex)psize[0];
     mxFree(psize);
 
     /* allocate workspace */
@@ -692,7 +691,7 @@ void qr_single(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             plhs[2] = mxCreateNumericMatrix(n,n,classid,mxREAL);
             Jpr = mxGetData(plhs[2]);
             for (i=0; i<n; i++) {
-                size_t idx = Jp[i]-1;
+                mwSignedIndex idx = Jp[i]-1;
                 Jpr[i*n+idx] = 1;
             }
         }
@@ -711,7 +710,7 @@ void qr_single(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         else {
             sorgqr(&m, &n2, &min_mn, Ap, &m, ptau, psize2, &lwork, &info);
         }
-        lwork = (ptrdiff_t)psize2[0];
+        lwork = (mwSignedIndex)psize2[0];
         mxFree(psize2);
 
         /* allocate workspace */
